@@ -23,168 +23,8 @@ const client = new MongoClient(mongoURI, {
   },
 });
 
-// API END POINTs
-// -----------
-
-// MongoDB connection and data insertion
-          // async function insertData() {
-          //   try {
-          //     await client.connect();
-          //     const db = client.db("toydb");
-          //     const collection = db.collection("toys");
-          //     await collection.insertMany(toysData);
-          //     console.log("Data inserted successfully into MongoDB.");
-          //   } catch (error) {
-          //     console.error("Error inserting data into MongoDB:", error);
-          //   } finally {
-          //     await client.close();
-          //   }
-          // }
-          // insertData()
-
-
-
-app.get("/", function (req, res) {
-  res.send("hello world");
-});
-
-// POST API for adding a toy
-app.post("/api/toys", async (req, res) => {
-  try {
-    const { seller, name, subCategory, price, quantity, descriptions } = req.body;
-    const toy = { seller, name, subCategory, price, quantity, descriptions };
-    
-
-    await client.connect();
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
-
-    const result = await collection.insertOne(toy);
-    toy._id = result.insertedId;
-
-    res.status(201).json({ message: "Toy added successfully.", toy });
-  } catch (error) {
-    res.status(500).json({ message: "Error adding toy.", error });
-  } finally {
-    await client.close();
-  }
-});
-
-// GET API to fetch all toys
-app.get("/api/toys", async (req, res) => {
-  try {
-    await client.connect();
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
-
-    const toys = await collection.find().toArray();
-
-    res.status(200).json({ toys });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching toys.", error });
-  } finally {
-    await client.close();
-  }
-});
-
-// GET API to fetch a single toy
-app.get("/api/toys/:id", async (req, res) => {
-  try {
-    const toyId = req.params.id;
-
-    await client.connect();
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
-
-    const toy = await collection.findOne({ _id: ObjectId(toyId) });
-
-    if (!toy) {
-      res.status(404).json({ message: "Toy not found." });
-    } else {
-      res.status(200).json({ toy });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching toy.", error });
-  } finally {
-    await client.close();
-  }
-});
-
-// GET API to search a toy by ID
-app.get("/api/toys/:id", async (req, res) => {
-  try {
-    const toyId = req.params.id;
-
-    await client.connect();
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
-
-    const toy = await collection.findOne({ _id: ObjectId(toyId) });
-
-    if (!toy) {
-      res.status(404).json({ message: "Toy not found." });
-    } else {
-      res.status(200).json({ toy });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error searching for toy.", error });
-  } finally {
-    await client.close();
-  }
-});
-
-
-// PUT API to update a toy
-app.put("/api/toys/:id", async (req, res) => {
-  try {
-    const toyId = req.params.id;
-    const { seller, name, subCategory, price, quantity } = req.body;
-
-    await client.connect();
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
-
-    const result = await collection.updateOne(
-      { _id: ObjectId(toyId) },
-      {
-        $set: { seller, name, subCategory, price, quantity },
-      }
-    );
-
-    if (result.matchedCount === 0) {
-      res.status(404).json({ message: "Toy not found." });
-    } else {
-      res.status(200).json({ message: "Toy updated successfully." });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error updating toy.", error });
-  } finally {
-    await client.close();
-  }
-});
-
-// DELETE API to delete a toy
-app.delete("/api/toys/:id", async (req, res) => {
-  try {
-    const toyId = req.params.id;
-
-    await client.connect();
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
-
-    const result = await collection.deleteOne({ _id: ObjectId(toyId) });
-
-    if (result.deletedCount === 0) {
-      res.status(404).json({ message: "Toy not found." });
-    } else {
-      res.status(200).json({ message: "Toy deleted successfully." });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting toy.", error });
-  } finally {
-    await client.close();
-  }
-});
+// API ENDPOINTS
+// -------------
 
 // MongoDB connection and server start
 async function startServer() {
@@ -203,5 +43,153 @@ async function startServer() {
     console.error("An error occurred:", error);
   }
 }
+
+// POST API for adding a toy
+app.post("/api/toys", async (req, res) => {
+  try {
+    const {
+      seller,
+      sellerEmail,
+      toyName,
+      subCategory,
+      price,
+      quantity,
+      descriptions,
+      photoURL,
+    } = req.body;
+
+    const toy = {
+      seller,
+      sellerEmail,
+      toyName,
+      subCategory,
+      price,
+      quantity,
+      descriptions,
+      photoURL,
+    };
+
+    const db = client.db("toydb");
+    const collection = db.collection("toys");
+
+    const result = await collection.insertOne(toy);
+    toy._id = result.insertedId;
+
+    res.status(201).json({ message: "Toy added successfully.", toy });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding toy.", error });
+  }
+});
+
+// GET API to fetch all toys
+app.get("/api/toys", async (req, res) => {
+  try {
+    const db = client.db("toydb");
+    const collection = db.collection("toys");
+
+    const toys = await collection.find().toArray();
+
+    res.status(200).json({ toys });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching toys.", error });
+  }
+});
+
+// Update API to fetch a single toy
+app.patch("/api/toys/:id", async (req, res) => {
+  const id = req.params.id;
+
+
+  const body =  req.params.body
+  console.log(body)
+
+  const filter = { _id: new ObjectId(id) };
+
+  const updateToys = req.body;
+
+  const updateDoc = {
+    $set: {
+      price: updateToys.price,
+      descriptions: updateToys.descriptions,
+      quantity: updateToys.quantity,
+    },
+  };
+
+  try {
+    const result = await toys.updateOne(filter, updateDoc);
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Toy updated successfully" });
+    } else {
+      res.status(404).json({ message: "Toy not found" });
+    }
+  } catch (error) {
+    console.error("Error updating toy:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// DELETE API to delete a toy
+app.delete("/api/toys/:id", async (req, res) => {
+  try {
+    const toyId = req.params.id;
+
+    const db = client.db("toydb");
+    const collection = db.collection("toys");
+
+    const result = await collection.deleteOne({ _id: new ObjectId(toyId) });
+
+    if (result.deletedCount === 0) {
+      res.status(404).json({ message: "Toy not found." });
+    } else {
+      res.status(200).json({ message: "Toy deleted successfully." });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting toy.", error });
+  }
+});
+
+// GET API to fetch toys sorted by price in descending order
+app.get("/api/toys/sort/descending", async (req, res) => {
+  try {
+    const db = client.db("toydb");
+    const collection = db.collection("toys");
+
+    const toys = await collection.find().sort({ price: -1 }).toArray();
+
+    res.status(200).json({ toys });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching toys.", error });
+  }
+});
+
+// GET API to fetch toys sorted by price in ascending order
+app.get("/api/toys/sort/ascending", async (req, res) => {
+  try {
+    const db = client.db("toydb");
+    const collection = db.collection("toys");
+
+    const toys = await collection.find().sort({ price: 1 }).toArray();
+
+    res.status(200).json({ toys });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching toys.", error });
+  }
+});
+
+// GET API to fetch toys of a specific logged-in user
+app.get("/api/my-toys", async (req, res) => {
+  try {
+    const userId = req.query;
+
+    const db = client.db("toydb");
+    const collection = db.collection("toys");
+
+    const toys = await collection.find({ sellerEmail: userId.email }).toArray();
+
+    res.status(200).json({ toys });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching toys.", error });
+  }
+});
 
 startServer();
