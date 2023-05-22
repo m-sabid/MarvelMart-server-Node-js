@@ -82,19 +82,7 @@ app.post("/api/toys", async (req, res) => {
   }
 });
 
-// GET API to fetch all toys
-app.get("/api/toys", async (req, res) => {
-  try {
-    const db = client.db("toydb");
-    const collection = db.collection("toys");
 
-    const toys = await collection.find().toArray();
-
-    res.status(200).json({ toys });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching toys.", error });
-  }
-});
 
 // GET API to fetch a single toy by id
 app.get("/api/toys/:id", async (req, res) => {
