@@ -32,7 +32,7 @@ async function startServer() {
     await client.db("admin").command({ ping: 1 });
 
     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
+      "You successfully connected to MongoDB!"
     );
 
     app.listen(port, () => {
